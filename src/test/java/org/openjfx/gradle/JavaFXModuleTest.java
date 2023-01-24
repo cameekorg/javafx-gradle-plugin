@@ -35,9 +35,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 class JavaFXModuleTest {
 
@@ -50,7 +48,7 @@ class JavaFXModuleTest {
 
     @Test
     void nonExistingModuleName() {
-        assertTrue(JavaFXModule.fromModuleName("javafx.unknown").isEmpty());
+        assertFalse(JavaFXModule.fromModuleName("javafx.unknown").isPresent());
     }
 
     @Test
@@ -76,14 +74,14 @@ class JavaFXModuleTest {
 
     @Test
     void validateWithValidModules() {
-        var moduleNames = List.of(JavaFXModule.CONTROLS.getModuleName(), JavaFXModule.WEB.getModuleName());
+        List<String> moduleNames = Utils.listOf(JavaFXModule.CONTROLS.getModuleName(), JavaFXModule.WEB.getModuleName());
 
         JavaFXModule.validateModules(moduleNames);
     }
 
     @Test
     void validateWithInvalidModules() {
-        var moduleNames = List.of("javafx.unknown", JavaFXModule.CONTROLS.getModuleName(), JavaFXModule.WEB.getModuleName());
+        List<String> moduleNames = Utils.listOf("javafx.unknown", JavaFXModule.CONTROLS.getModuleName(), JavaFXModule.WEB.getModuleName());
 
         try {
             JavaFXModule.validateModules(moduleNames);

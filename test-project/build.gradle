@@ -1,5 +1,6 @@
 buildscript {
     repositories {
+        mavenLocal()
         maven {
             url "https://plugins.gradle.org/m2/"
         }
@@ -8,7 +9,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "org.openjfx:javafx-plugin:0.0.+"
+        classpath "org.cameek:javafx-plugin-jdk8:0.0.13-SNAPSHOT"
     }
 }
 
@@ -16,8 +17,8 @@ subprojects {
     apply plugin: 'application'
     apply plugin: 'org.openjfx.javafxplugin'
 
-    sourceCompatibility = 11
-    targetCompatibility = 11
+    sourceCompatibility = 8
+    targetCompatibility = 8
 
     repositories {
         mavenCentral()

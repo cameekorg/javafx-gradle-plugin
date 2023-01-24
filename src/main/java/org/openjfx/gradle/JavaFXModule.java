@@ -56,7 +56,7 @@ public enum JavaFXModule {
     private List<JavaFXModule> dependentModules;
 
     JavaFXModule(JavaFXModule...dependentModules) {
-        this.dependentModules = List.of(dependentModules);
+        this.dependentModules = Utils.listOf(dependentModules);
     }
 
     public static Optional<JavaFXModule> fromModuleName(String moduleName) {
@@ -87,14 +87,14 @@ public enum JavaFXModule {
 
         return moduleNames.stream()
                 .map(JavaFXModule::fromModuleName)
-                .flatMap(Optional::stream)
+                .flatMap(Utils::optionalStream)
                 .flatMap(javaFXModule -> javaFXModule.getMavenDependencies().stream())
                 .collect(Collectors.toSet());
     }
 
     public static void validateModules(List<String> moduleNames) {
-        var invalidModules = moduleNames.stream()
-                .filter(module -> JavaFXModule.fromModuleName(module).isEmpty())
+        List<String> invalidModules = moduleNames.stream()
+                .filter(module -> (!JavaFXModule.fromModuleName(module).isPresent()))
                 .collect(Collectors.toList());
 
         if (! invalidModules.isEmpty()) {

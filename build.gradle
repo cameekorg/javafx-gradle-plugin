@@ -12,11 +12,11 @@ buildScan {
     termsOfServiceAgree = 'yes'
 }
 
-group 'org.openjfx'
-version '0.0.13'
+group 'org.cameek'
+version '0.0.13-SNAPSHOT'
 
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = 8
+targetCompatibility = 8
 
 repositories {
     mavenCentral()

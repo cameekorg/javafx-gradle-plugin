@@ -29,6 +29,8 @@
  */
 package org.openjfx.gradle;
 
+import org.gradle.api.JavaVersion;
+import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.TaskOutcome;
 import org.junit.jupiter.api.Test;
@@ -41,15 +43,21 @@ class JavaFXPluginSmokeTest {
 
     @Test
     void smokeTest() {
-        var result = GradleRunner.create()
+        BuildResult result = GradleRunner.create()
                 .withProjectDir(new File("test-project"))
                 .withGradleVersion("6.0.1")
                 .withArguments("clean", "build", "run", "--stacktrace")
                 .forwardOutput()
                 .build();
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":modular:run").getOutcome(), "Failed build!");
+        if (JavaVersion.current().isJava9Compatible()) {
+            assertEquals(TaskOutcome.SUCCESS, result.task(":modular:run").getOutcome(), "Failed build!");
+        }
+
         assertEquals(TaskOutcome.SUCCESS, result.task(":non-modular:run").getOutcome(), "Failed build!");
-        assertEquals(TaskOutcome.SUCCESS, result.task(":transitive:run").getOutcome(), "Failed build!");
+
+        if (JavaVersion.current().isJava9Compatible()) {
+            assertEquals(TaskOutcome.SUCCESS, result.task(":transitive:run").getOutcome(), "Failed build!");
+        }
     }
 }

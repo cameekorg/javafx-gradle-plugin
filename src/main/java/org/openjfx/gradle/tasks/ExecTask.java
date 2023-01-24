@@ -31,6 +31,7 @@ package org.openjfx.gradle.tasks;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
@@ -38,10 +39,11 @@ import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskAction;
-import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
+//import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
 import org.openjfx.gradle.JavaFXModule;
 import org.openjfx.gradle.JavaFXOptions;
 import org.openjfx.gradle.JavaFXPlatform;
+import org.openjfx.gradle.Utils;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -72,13 +74,19 @@ public class ExecTask extends DefaultTask {
 
     @TaskAction
     public void action() {
+
+        if (!JavaVersion.current().isJava11Compatible()) {
+            return;
+        }
+
         if (execTask != null) {
             JavaFXOptions javaFXOptions = project.getExtensions().getByType(JavaFXOptions.class);
             JavaFXModule.validateModules(javaFXOptions.getModules());
 
-            var definedJavaFXModuleNames = new TreeSet<>(javaFXOptions.getModules());
+            TreeSet<String> definedJavaFXModuleNames = new TreeSet<>(javaFXOptions.getModules());
             if (!definedJavaFXModuleNames.isEmpty()) {
-                RunModuleOptions moduleOptions = execTask.getExtensions().findByType(RunModuleOptions.class);
+                Class<?> classRunModuleOptions = Utils.classRunModuleOptions();
+                Object moduleOptions = execTask.getExtensions().findByType(classRunModuleOptions);
 
                 final FileCollection classpathWithoutJavaFXJars = execTask.getClasspath().filter(
                         jar -> Arrays.stream(JavaFXModule.values()).noneMatch(javaFXModule -> jar.getName().contains(javaFXModule.getArtifactName()))
@@ -89,15 +97,15 @@ public class ExecTask extends DefaultTask {
                     LOGGER.info("Modular JavaFX application found");
                     // Remove empty JavaFX jars from classpath
                     execTask.setClasspath(classpathWithoutJavaFXJars.plus(javaFXPlatformJars));
-                    definedJavaFXModuleNames.forEach(javaFXModule -> moduleOptions.getAddModules().add(javaFXModule));
+                    definedJavaFXModuleNames.forEach(javaFXModule -> Utils.runModuleOptionsAddModulesAdd(moduleOptions, classRunModuleOptions, javaFXModule));
                 } else {
                     LOGGER.info("Non-modular JavaFX application found");
                     // Remove all JavaFX jars from classpath
                     execTask.setClasspath(classpathWithoutJavaFXJars);
 
-                    var javaFXModuleJvmArgs = List.of("--module-path", javaFXPlatformJars.getAsPath());
+                    List<String> javaFXModuleJvmArgs = Utils.listOf("--module-path", javaFXPlatformJars.getAsPath());
 
-                    var jvmArgs = new ArrayList<String>();
+                    List<String> jvmArgs = new ArrayList<>();
                     jvmArgs.add("--add-modules");
                     jvmArgs.add(String.join(",", definedJavaFXModuleNames));
 
